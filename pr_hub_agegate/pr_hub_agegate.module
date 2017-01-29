@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Controls the visual building blocks a page is constructed with.
+ */
+
+/**
  * Implements hook_init().
  */
 function pr_hub_agegate_init() {
