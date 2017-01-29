@@ -2,7 +2,6 @@ name = Pernod Ricard Age Gate
 description = "Age gate pour le site Pernod Ricard"
 core = 7.x
 
-core = "7.x"
 package = "Pernod Ricard"
 
 dependencies[] = session_cache
