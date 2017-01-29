@@ -1,3 +1,4 @@
+// jshint ignore: start
 (function() {
     var animationSupport = false,
         animationString = 'animation',
