@@ -1,0 +1,35 @@
+{
+  "bitwise": true,
+  "camelcase": true,
+  "curly": true,
+  "eqeqeq": true,
+  "forin": true,
+  "immed": true,
+  "indent": 4,
+  "latedef": true,
+  "newcap": true,
+  "noarg": true,
+  "nonew": true,
+  "quotmark": "single",
+  "strict": true,
+  "undef": true,
+  "unused": true,
+  "esnext": true,
+  "sub": true,
+  "browser": true,
+  "node": false,
+  "jquery": true,
+  // Development.
+  "debug"         : false,  // Allow debugger statements e.g. browser breakpoints.
+  "devel"         : false,   // Allow developments statements e.g. `console.log();`.
+  "predef": [
+    "Drupal",
+    "drupalSettings",
+    "jQuery",
+    "_",
+    "matchMedia",
+    "Backbone",
+    "VIE",
+    "CKEDITOR"
+  ]
+}
