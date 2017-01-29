@@ -11,4 +11,5 @@
 function pr_hub_agegate_init() {
   global $language;
   echo $language;
+  echo t("Test Drupal");
 }
