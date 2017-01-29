@@ -1,3 +1,5 @@
+// jshint ignore: start
+
 /**
  * Created by y.nassib on 08/09/2016.
  */
