@@ -9,6 +9,6 @@
  * Implements hook_init().
  */
 function pr_hub_agegate_init() {
-  global $base_url, $base_path, $language;
+  global $language;
   echo $language;
 }
