@@ -1,0 +1,18 @@
+<?php
+/**
+ * @file
+ * Code for the Vactory Accordion feature.
+ */
+
+include_once 'vactory_accordion.features.inc';
+
+function vactory_accordion_theme(){
+  return array(
+    'node__accordion' => array(
+      'render element' => 'content',
+      'base hook' => 'node',
+      'template' => 'node--accordion',
+      'path' => drupal_get_path('module', 'vactory_accordion') . '/templates/nodes',
+    ),
+  );
+}

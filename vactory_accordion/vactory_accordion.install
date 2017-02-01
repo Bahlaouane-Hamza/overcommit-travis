@@ -1,0 +1,15 @@
+<?php
+/**
+ * Implements hook_install().
+ */
+function vactory_accordion_install() {
+	$theme = variable_get('theme_default','');
+	$path_scss_from_module = drupal_get_path('module', 'vactory_accordion') . '/css/_accordion.scss';
+	$path_scss_to_theme = drupal_get_path('theme', $theme) . '/scss/components/_accordion.scss';
+
+	if (!file_exists($path_scss_to_theme)) {
+    	if (!copy($path_scss_from_module, $path_scss_to_theme)) {
+    		drupal_set_message(t('Copy of file failed'), 'error');
+		}
+	}
+}
