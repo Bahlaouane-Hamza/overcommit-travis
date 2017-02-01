@@ -1,0 +1,151 @@
+<?php
+/**
+ * @file
+ * Code for the vactory_mediatheque feature.
+ */
+
+include_once 'vactory_mediatheque.features.inc';
+
+	function vactory_mediatheque_views_api_alter(&$apis) {
+	    $apis['mediatheque_view']['path'] = drupal_get_path('module', 'vactory_mediatheque');
+	    $apis['mediatheque_view']['template path'] = drupal_get_path('module', 'vactory_mediatheque') . '/template';
+
+	    $apis['mediatheque_homepage']['path'] = drupal_get_path('module', 'vactory_mediatheque');
+	    $apis['mediatheque_homepage']['template path'] = drupal_get_path('module', 'vactory_mediatheque') . '/template';
+	}
+
+	function vactory_mediatheque_form_alter(&$form, &$form_state, $form_id) {
+	    
+	    if ($form_id=="mediatheque_node_form"){
+	        $form['field_medium_poids']['#access']=false;
+	        $form['field_field_mediatheque_thum_lar']['#access'] = false;
+	        $form['field_field_mediatheque_thum_med']['#access'] = false;
+	        $form['field_field_mediatheque_thum_sma']['#access'] = false;
+	        $form['field_field_mediatheque_year']['#access']=false;
+
+	    }
+	}
+
+	function vactory_mediatheque_views_post_execute(&$view) {
+	  $view_name = 'mediatheque_homepage';
+	  $view_display = 'block_mediatheque_homepage';
+	  // Hide the view if less than 4 results
+	  if ($view->name == $view_name && $view->current_display == $view_display && count($view->result) < 4) {
+	    $view->result = array();
+	  }
+	}
+
+	/**
+    * 	Implements hook_menu_node_update.
+    */
+    function vactory_mediatheque_node_update($node) {
+
+        if($node->type == 'mediatheque'){
+            $year=date('Y', strtotime($node->field_field_mediatheque_date['und']['0']['value']));
+            $node->field_field_mediatheque_year['und']['0']['value']=$year;
+            $type_video=NULL;
+            if(isset($node->field_field_mediatheque_url['und'][0])){
+                $url_video 	=	$node->field_field_mediatheque_url['und'][0]['value'];
+
+                $parse_url=parse_url($url_video);
+                if(isset($parse_url['host']) && $parse_url['host']=="www.youtube.com"){
+                   $type_video='youtube';
+                }
+                if(isset($parse_url['host']) && $parse_url['host']=="www.dailymotion.com"){
+                    $type_video='dailymotion';
+                }
+                if(isset($parse_url['host']) && $parse_url['host']=="player.vimeo.com"){
+                    $type_video='vimeo';
+                } 
+                if($type_video!=NULL){
+                    $node=update_mediatheque_url_image($node, $url_video , $type_video); 
+                }
+            }
+            field_attach_update('node', $node);
+            entity_get_controller('node')->resetCache(array($node->nid));
+        }
+    }
+
+    /**
+    * 	Implements hook_menu_node_insert.
+    */
+    function vactory_mediatheque_node_insert($node) {
+        if($node->type == 'mediatheque'){
+
+            if($node->is_new == TRUE){
+                $year=date('Y', strtotime($node->field_field_mediatheque_date['und']['0']['value']));
+                $node->field_field_mediatheque_year['und']['0']['value']=$year;
+            }
+
+            $type_video=NULL;
+            if(isset($node->field_field_mediatheque_url['und'][0])){
+                $url_video 	=	$node->field_field_mediatheque_url['und'][0]['value'];
+
+                $parse_url=parse_url($url_video);
+                if($parse_url['host']=="www.youtube.com"){
+                   $type_video='youtube';
+                }
+                if($parse_url['host']=="www.dailymotion.com"){
+                    $type_video='dailymotion';
+                }
+                if($parse_url['host']=="player.vimeo.com"){
+                    $type_video='vimeo';
+                }   
+                if($type_video!=NULL){
+                    $node=update_mediatheque_url_image($node, $url_video , $type_video); 
+                }
+            }
+            field_attach_update('node', $node);
+            entity_get_controller('node')->resetCache(array($node->nid));
+
+        }
+    }
+
+    function update_mediatheque_url_image($node , $url_video , $type){
+        if($type == 'youtube'){
+            $check_url_1 = 	filter_var($url_video, FILTER_VALIDATE_URL);
+            $check_url_2 =	strpos( $url_video , 'youtube');
+
+            if( $check_url_1 == false || $check_url_2 == false )
+                return $node;
+            $code=explode('https://www.youtube.com/embed/',$url_video);
+            $code_video = array_pop($code);
+            $node->field_field_mediatheque_url['und'][0]['value'] = $node->field_field_mediatheque_url['und'][0]['value'];
+            $node->field_field_mediatheque_thum_lar['und'][0]['value'] = "http://img.youtube.com/vi/".$code_video."/0.jpg";
+            $node->field_field_mediatheque_thum_med['und'][0]['value'] = "http://img.youtube.com/vi/".$code_video."/1.jpg";
+            $node->field_field_mediatheque_thum_sma['und'][0]['value'] = "http://img.youtube.com/vi/".$code_video."/2.jpg";
+            return $node;
+
+        } else if($type == 'vimeo') {
+
+            $check_url_1 = 	filter_var($url_video, FILTER_VALIDATE_URL);
+            $check_url_2 =	strpos( $url_video , 'vimeo');
+
+            if( $check_url_1 == false || $check_url_2 == false )
+                    return $node;
+            $code=explode('https://player.vimeo.com/video/',$url_video);
+            $code_video = array_pop($code);
+            $xml 			= 	simplexml_load_file('http://vimeo.com/api/v2/video/'.$code_video.'.xml');
+
+            if( !$xml || !is_object($xml) || !property_exists($xml , 'video') )
+                    return $node;
+
+            $url_image 	=	$xml->video->thumbnail_medium;
+            $node->field_field_mediatheque_thum_lar['und'][0]['value'] = $xml->video->thumbnail_large;
+            $node->field_field_mediatheque_thum_med['und'][0]['value'] = $xml->video->thumbnail_medium;
+            $node->field_field_mediatheque_thum_sma['und'][0]['value'] = $xml->video->thumbnail_small;
+            return $node;
+
+        } else if($type == 'dailymotion'){
+            $code=explode('//www.dailymotion.com/embed/video/',$url_video);
+            $code_video = array_pop($code);
+            $thumbnail_large_url = json_decode(file_get_contents("https://api.dailymotion.com/video/$code_video?fields=thumbnail_large_url"));
+            $thumbnail_medium_url = json_decode(file_get_contents("https://api.dailymotion.com/video/$code_video?fields=thumbnail_medium_url"));
+            $thumbnail_small_url = json_decode(file_get_contents("https://api.dailymotion.com/video/$code_video?fields=thumbnail_small_url"));
+            $node->field_field_mediatheque_thum_lar['und'][0]['value'] = $thumbnail_large_url->thumbnail_large_url;
+            $node->field_field_mediatheque_thum_med['und'][0]['value'] = $thumbnail_medium_url->thumbnail_medium_url;
+            $node->field_field_mediatheque_thum_sma['und'][0]['value'] = $thumbnail_small_url->thumbnail_small_url;
+            return $node;
+        }
+
+    }
